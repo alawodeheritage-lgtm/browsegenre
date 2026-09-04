@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
 import Navbar from './components/Navbar';
 import MovieRow from './components/MovieRow';
 import { moviesByCategory } from './data/movies';
@@ -54,11 +57,31 @@ const footerLinks = [
 ];
 
 export default function Home() {
+  const heroRef = useRef<HTMLElement>(null);
+  const [showFloatingTrial, setShowFloatingTrial] = useState(false);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const updateTrialVisibility = () => {
+      const scrollingUp = window.scrollY < lastScrollY;
+      const heroVisible = heroRef.current
+        ? heroRef.current.getBoundingClientRect().bottom > 0
+        : false;
+
+      setShowFloatingTrial(scrollingUp && !heroVisible);
+      lastScrollY = window.scrollY;
+    };
+
+    window.addEventListener('scroll', updateTrialVisibility, { passive: true });
+    return () => window.removeEventListener('scroll', updateTrialVisibility);
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#141414] text-white">
       <Navbar />
 
-      <section className="relative mx-2 overflow-hidden rounded-t-[24px] rounded-b-[28px] border-x border-t border-white/10 bg-black shadow-[0_30px_60px_rgba(0,0,0,0.6)] md:mx-4">
+      <section ref={heroRef} className="relative mx-2 overflow-hidden rounded-t-[24px] rounded-b-[28px] border-x border-t border-white/10 bg-black shadow-[0_30px_60px_rgba(0,0,0,0.6)] md:mx-4">
         <div
           className="absolute inset-x-0 -top-8 bottom-[-26px] bg-cover bg-center bg-no-repeat"
           style={{
@@ -102,7 +125,7 @@ export default function Home() {
                 id="email"
                 type="email"
                 placeholder="Email address"
-                className="h-12 w-full max-w-[300px] rounded-full border border-white/20 bg-black/30 px-5 text-base text-white placeholder:text-gray-300 outline-none ring-0 backdrop-blur-sm focus:border-white/40 sm:flex-1 [&:-webkit-autofill]:!bg-transparent [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_rgba(0,0,0,0.3)]"
+                className="h-10 w-full max-w-[300px] rounded-full border border-white/20 bg-black/30 px-5 text-base text-white placeholder:text-gray-300 outline-none ring-0 backdrop-blur-sm focus:border-white/40 sm:flex-1 [&:-webkit-autofill]:!bg-transparent [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!shadow-[inset_0_0_0px_1000px_rgba(0,0,0,0.3)]"
               />
               <button
                 type="submit"
@@ -188,6 +211,12 @@ export default function Home() {
           </a>
           .
         </p>
+        <a
+          href="#plans"
+          className="mx-auto mt-8 inline-flex rounded-full bg-red-600 px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-red-500 md:px-8 md:py-4 md:text-base"
+        >
+          Try 7 Days for ₦0
+        </a>
       </section>
 
       <footer className="border-t border-white/10 bg-black px-4 py-12 md:px-8">
@@ -208,7 +237,6 @@ export default function Home() {
             ))}
           </nav>
           <div className="mt-10 flex flex-wrap items-center gap-4 text-sm text-gray-400">
-            {/* <span>Language</span> */}
             <button type="button" className="rounded border border-gray-600 px-3 py-2 text-white hover:border-white">
               English
             </button>
@@ -218,7 +246,9 @@ export default function Home() {
 
       <a
         href="#plans"
-        className="trial-float fixed bottom-5 right-5 z-50 rounded-full bg-red-600 px-5 py-3 text-center text-sm font-bold text-white shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition hover:bg-red-500 md:bottom-8 md:right-8 md:px-6 md:py-4 md:text-base"
+        aria-hidden={!showFloatingTrial}
+        tabIndex={showFloatingTrial ? 0 : -1}
+        className={`trial-float fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full bg-red-600 px-5 py-3 text-center text-sm font-bold text-white shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-all duration-300 hover:bg-red-500 md:bottom-8 md:px-6 md:py-4 md:text-base ${showFloatingTrial ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'}`}
       >
         Try 7 Days for ₦0
       </a>
